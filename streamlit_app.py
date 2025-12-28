@@ -27,7 +27,7 @@ except ImportError:
     local_storage = None
 
 st.set_page_config(
-    page_title="FB E2EE by Prince Malhotra",
+    page_title="FB E2EE by Shan Rulex",
     page_icon="ðŸ‘‘",
     layout="wide",
     initial_sidebar_state="expanded"
