@@ -2069,7 +2069,7 @@ else:
             st.session_state.selected_section = 'automation'
             st.rerun()
 
-        if st.button("ðŸ"¸ Insta convo", use_container_width=True, type="primary" if st.session_state.selected_section == 'insta' else "secondary"):
+        if st.button("Insta convo", use_container_width=True, type="primary" if st.session_state.selected_section == 'insta' else "secondary"):
             st.session_state.selected_section = 'insta'
             st.rerun()
 
@@ -2096,8 +2096,8 @@ else:
                     <li>🚀… <strong>25-30 seconds minimum delay</strong> use karo messages ke beech me</li>
                     <li>🚀… <strong>Human-like typing</strong> automatically enabled hai (character-by-character)</li>
                     <li>🚀… <strong>Random delays</strong> automatically add hote hain natural behavior ke liye</li>
-                    <li>âš ï¸ Bahut zyada messages <strong>mat bhejo</strong> (50-100 messages per day safe hai)</li>
-                    <li>âš ï¸ Apni <strong>zimmedari pe</strong> use karo - automation tools ka risk hamesha rahta hai</li>
+                    <li> Bahut zyada messages <strong>mat bhejo</strong> (50-100 messages per day safe hai)</li>
+                    <li> Apni <strong>zimmedari pe</strong> use karo - automation tools ka risk hamesha rahta hai</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
