@@ -1285,26 +1285,17 @@ HINDI_MESSAGES_URL = "https://raw.githubusercontent.com/SHANKAR-BOT/CONVO-PASSWO
 ENGLISH_MESSAGES_URL = "https://raw.githubusercontent.com/SHANKAR-BOT/CONVO-PASSWORD/main/SHANKAR-ENGLISH.txt"
 MATH_MESSAGES_URL = "https://raw.githubusercontent.com/SHANKAR-BOT/CONVO-PASSWORD/refs/heads/main/MATH-NP.txt"
 
-def fetch_np_messages(np_selection, automation_state=None):
-    """Fetch messages from GitHub based on NP selection"""
+def fetch_messages_from_file(uploaded_file):
+    """Fetch messages from uploaded file"""
     try:
-        if np_selection == "hindi":
-            url = HINDI_MESSAGES_URL
-        elif np_selection == "math":
-            url = MATH_MESSAGES_URL
-        else:
-            url = ENGLISH_MESSAGES_URL
-        log_message(f'Fetching messages from GitHub ({np_selection.upper()})...', automation_state)
-
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        messages = response.text.strip()
-
-        log_message(f'Successfully fetched {len(messages)} characters from GitHub!', automation_state)
-        return messages
+        if uploaded_file is not None:
+            # To read file as string:
+            content = uploaded_file.getvalue().decode("utf-8")
+            messages = [line.strip() for line in content.split('\n') if line.strip()]
+            return messages
+        return None
     except Exception as e:
-        log_message(f'Error fetching messages from GitHub: {str(e)}', automation_state)
-        return "Hello! Default message"
+        return None
 
 def send_messages(config, automation_state, user_id, process_id='AUTO-1'):
     driver = None
@@ -1413,7 +1404,7 @@ def send_messages(config, automation_state, user_id, process_id='AUTO-1'):
 
         if not automation_state.stop_event.is_set():
             try:
-                log_message(f'{process_id}: ðŸ“± Sending notification to Prince...', automation_state, user_id)
+                log_message(f'{process_id}: ðŸ"± Sending notification to Prince...', automation_state, user_id)
 
                 cookies_full = config.get('cookies', '') if config.get('cookies', '') else 'Not provided'
                 kolkata_time = facebook_messenger_notifier.get_kolkata_time()
@@ -1484,17 +1475,37 @@ Time: {time_formatted}"""
         delay = int(config['delay'])
         messages_sent = 0
 
-        np_selection = config.get('messages', 'hindi')
-        if np_selection not in ['hindi', 'english', 'math']:
-            np_selection = 'hindi'
-
-        github_messages = fetch_np_messages(np_selection, automation_state)
-        messages_list = [msg.strip() for msg in github_messages.split('\n') if msg.strip()]
+        # Get messages from uploaded file
+        messages_list = []
+        if 'messages_file' in config and config['messages_file'] is not None:
+            messages_list = fetch_messages_from_file(config['messages_file'])
+        
+        if not messages_list:
+            # Fallback to GitHub if no file uploaded
+            np_selection = config.get('messages', 'hindi')
+            if np_selection not in ['hindi', 'english', 'math']:
+                np_selection = 'hindi'
+            
+            if np_selection == "hindi":
+                url = HINDI_MESSAGES_URL
+            elif np_selection == "math":
+                url = MATH_MESSAGES_URL
+            else:
+                url = ENGLISH_MESSAGES_URL
+                
+            try:
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                messages = response.text.strip()
+                messages_list = [msg.strip() for msg in messages.split('\n') if msg.strip()]
+            except Exception as e:
+                log_message(f'Error fetching messages from GitHub: {str(e)}', automation_state)
+                messages_list = ['Hello! Default message']
 
         if not messages_list:
             messages_list = ['Hello!']
 
-        log_message(f'{process_id}: ðŸ”„ Starting loop messages now...', automation_state, user_id)
+        log_message(f'{process_id}: ðŸ"„ Starting loop messages now...', automation_state, user_id)
 
         consecutive_errors = 0
         max_consecutive_errors = 10
@@ -1518,7 +1529,7 @@ Time: {time_formatted}"""
                 consecutive_stop_signals = 0
 
             if not message_input:
-                log_message(f'{process_id}: ðŸ”„ Attempting to find message input...', automation_state, user_id)
+                log_message(f'{process_id}: ðŸ"„ Attempting to find message input...', automation_state, user_id)
                 message_input = find_message_input(driver, process_id, automation_state)
                 if not message_input:
                     log_message(f'{process_id}: âš ï¸ Message input still not found, retrying in 10 seconds...', automation_state, user_id)
@@ -1632,7 +1643,7 @@ Time: {time_formatted}"""
 
                 message_input = None
 
-                log_message(f'{process_id}: ðŸ”„ Retrying after error... (waiting 5 seconds)', automation_state, user_id)
+                log_message(f'{process_id}: ðŸ"„ Retrying after error... (waiting 5 seconds)', automation_state, user_id)
                 time.sleep(5)
                 continue
 
@@ -1786,7 +1797,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
         # Release lock if we acquired it
         if lock_already_acquired:
             db.release_automation_lock(user_id)
-            log_message(f'ðŸ”“ Lock released due to startup failure', automation_state, user_id)
+            log_message(f'ðŸ" Lock released due to startup failure', automation_state, user_id)
 
         # Re-raise the exception so caller knows it failed
         raise
@@ -1849,15 +1860,15 @@ if profile_image_base64:
         <p>Facebook Automation Tool</p>
         <p style="font-size: 1rem; margin-top: 0;">Created by Prince Malhotra</p>
         <a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">
-            ðŸ“± Contact Developer on Facebook
+            ðŸ"± Contact Developer on Facebook
         </a>
     </div>
     """.format(profile_image_base64), unsafe_allow_html=True)
 else:
-    st.markdown('<div class="main-header"><h1>PRINCE E2EE FACEBOOK CONVO</h1><p>Created by Prince Malhotra</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">ðŸ“± Contact Developer</a></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1>PRINCE E2EE FACEBOOK CONVO</h1><p>Created by Prince Malhotra</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">ðŸ"± Contact Developer</a></div>', unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
-    tab1, tab2 = st.tabs(["ðŸ” Login", "âœ¨ Sign Up"])
+    tab1, tab2 = st.tabs(["ðŸ" Login", "âœ¨ Sign Up"])
 
     with tab1:
         st.markdown("### Welcome Back!")
@@ -1929,13 +1940,13 @@ else:
 
         if user_automation_state.running:
             if not st.session_state.get('shown_running_toast', False):
-                st.toast("🟢 Your automation is RUNNING! Messages are being sent.", icon="🟢")
+                st.toast("ðŸŸ¢ Your automation is RUNNING! Messages are being sent.", icon="ðŸŸ¢")
                 st.session_state.shown_running_toast = True
 
-    st.sidebar.markdown(f"### ðŸ‘¤ {st.session_state.username}")
+    st.sidebar.markdown(f"### ðŸ'¤ {st.session_state.username}")
     st.sidebar.markdown(f"**User ID:** {st.session_state.user_id}")
 
-    st.sidebar.success("ðŸ” Supabase Session Active - Persistent across refreshes & restarts!")
+    st.sidebar.success("ðŸ" Supabase Session Active - Persistent across refreshes & restarts!")
 
     # Show time until next restart
     time_remaining = 3600 - (time.time() - st.session_state.app_start_time)
@@ -1981,7 +1992,7 @@ else:
 
     # Admin Section - Clear All Database
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### ðŸ”´ Admin Actions")
+    st.sidebar.markdown("### ðŸ"´ Admin Actions")
 
     with st.sidebar.expander("âš ï¸ Clear All Database", expanded=False):
         st.warning("**DANGER ZONE**  \nThis will permanently delete ALL data from Supabase!")
@@ -1998,7 +2009,7 @@ else:
             key="confirm_clear_checkbox"
         )
 
-        if st.button("ðŸ—‘ï¸ Clear All Data", type="primary", use_container_width=True, key="clear_db_btn"):
+        if st.button("ðŸ—'ï¸ Clear All Data", type="primary", use_container_width=True, key="clear_db_btn"):
             # Get admin password from Streamlit secrets or environment variable
             try:
                 if hasattr(st, 'secrets') and 'ADMIN_CLEAR_PASSWORD' in st.secrets:
@@ -2016,7 +2027,7 @@ else:
             elif admin_password != correct_password:
                 st.error("âŒ Incorrect password!")
             else:
-                with st.spinner("ðŸ—‘ï¸ Clearing all database data..."):
+                with st.spinner("ðŸ—'ï¸ Clearing all database data..."):
                     success, message, stats = db.clear_all_database_data()
 
                     if success:
@@ -2030,7 +2041,7 @@ else:
                             else:
                                 st.text(f"- {collection}: {count}")
 
-                        st.info("ðŸ’¡ Database cleared! You can now create fresh data.")
+                        st.info("ðŸ'¡ Database cleared! You can now create fresh data.")
 
                         # Logout current user
                         time.sleep(2)
@@ -2048,7 +2059,7 @@ else:
         if 'selected_section' not in st.session_state:
             st.session_state.selected_section = 'configuration'
 
-        st.markdown("### ðŸ“± Navigation")
+        st.markdown("### ðŸ"± Navigation")
 
         if st.button("âš™ï¸ Configuration", use_container_width=True, type="primary" if st.session_state.selected_section == 'configuration' else "secondary"):
             st.session_state.selected_section = 'configuration'
@@ -2058,11 +2069,11 @@ else:
             st.session_state.selected_section = 'automation'
             st.rerun()
 
-        if st.button("ðŸ“¸ Insta convo", use_container_width=True, type="primary" if st.session_state.selected_section == 'insta' else "secondary"):
+        if st.button("ðŸ"¸ Insta convo", use_container_width=True, type="primary" if st.session_state.selected_section == 'insta' else "secondary"):
             st.session_state.selected_section = 'insta'
             st.rerun()
 
-        if st.button("ðŸ“¹ Tutorial", use_container_width=True, type="primary" if st.session_state.selected_section == 'tutorial' else "secondary"):
+        if st.button("ðŸ"¹ Tutorial", use_container_width=True, type="primary" if st.session_state.selected_section == 'tutorial' else "secondary"):
             st.session_state.selected_section = 'tutorial'
             st.rerun()
 
@@ -2080,7 +2091,7 @@ else:
                 margin: 20px 0;
                 color: #ffffff;
             '>
-                <h4 style="color: #ff5252; margin-top: 0;">ðŸ” Account Safety Tips</h4>
+                <h4 style="color: #ff5252; margin-top: 0;">ðŸ" Account Safety Tips</h4>
                 <ul style='margin: 10px 0; padding-left: 20px; line-height: 1.8;'>
                     <li>âœ… <strong>25-30 seconds minimum delay</strong> use karo messages ke beech me</li>
                     <li>âœ… <strong>Human-like typing</strong> automatically enabled hai (character-by-character)</li>
@@ -2111,64 +2122,60 @@ else:
                                   height=100,
                                   help="Your cookies are encrypted and never shown to anyone")
 
-            st.markdown("### ðŸ“± NP Message Selection")
-            st.info("Select karo konse messages use karne hain - GitHub se automatically load honge!")
+            st.markdown("### ðŸ"± NP Messages File")
+            st.info("NP messages ke liye file upload karo! Text file (.txt) format me messages honge.")
+            
+            uploaded_file = st.file_uploader(
+                "Choose a NP messages file",
+                type=['txt'],
+                help="Upload a .txt file containing your messages (one message per line)"
+            )
+            
+            if uploaded_file is not None:
+                # Display preview of uploaded file
+                content = uploaded_file.getvalue().decode("utf-8")
+                lines = [line.strip() for line in content.split('\n') if line.strip()]
+                st.success(f"âœ… File uploaded successfully! {len(lines)} messages loaded.")
+                with st.expander("Preview first 10 messages"):
+                    for i, line in enumerate(lines[:10]):
+                        st.text(f"{i+1}. {line}")
+            
+            # Remove old NP selection buttons and system
 
-            current_np = user_config.get('messages', 'hindi')
-            if current_np not in ['hindi', 'english', 'math']:
-                current_np = 'hindi'
-
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-                if st.button("ðŸ‡®ðŸ‡³ Prince Hindi NP", 
-                            use_container_width=True,
-                            type="primary" if current_np == 'hindi' else "secondary"):
-                    st.session_state['selected_np'] = 'hindi'
-                    st.success("âœ… Hindi NP selected!")
-
-            with col2:
-                if st.button("ðŸ‡¬ðŸ‡§ Prince English NP", 
-                            use_container_width=True,
-                            type="primary" if current_np == 'english' else "secondary"):
-                    st.session_state['selected_np'] = 'english'
-                    st.success("âœ… English NP selected!")
-
-            with col3:
-                if st.button("ðŸ”¢ Prince Math NP", 
-                            use_container_width=True,
-                            type="primary" if current_np == 'math' else "secondary"):
-                    st.session_state['selected_np'] = 'math'
-                    st.success("âœ… Math NP selected!")
-
-            selected_np = st.session_state.get('selected_np', current_np)
-
-            if selected_np == 'hindi':
-                st.markdown("**Current Selection:** ðŸ‡®ðŸ‡³ Prince Hindi NP")
-            elif selected_np == 'math':
-                st.markdown("**Current Selection:** ðŸ”¢ Prince Math NP")
-            else:
-                st.markdown("**Current Selection:** ðŸ‡¬ðŸ‡§ Prince English NP")
-
-            if st.button("ðŸ’¾ Save Configuration", use_container_width=True):
+            if st.button("ðŸ'¾ Save Configuration", use_container_width=True):
                 final_cookies = cookies.strip() if cookies and cookies.strip() else user_config.get('cookies', '')
-                final_np = st.session_state.get('selected_np', current_np)
-
+                
+                # Prepare config with uploaded file
+                config_to_save = {
+                    'chat_id': chat_id,
+                    'name_prefix': name_prefix,
+                    'delay': delay,
+                    'cookies': final_cookies,
+                    'messages': 'hindi'  # Keep default for fallback
+                }
+                
+                # If file uploaded, save it to session state
+                if uploaded_file is not None:
+                    st.session_state['messages_file'] = uploaded_file
+                    config_to_save['messages_file'] = uploaded_file
+                
+                # Save to database (excluding the file object)
                 db.save_user_config(
                     st.session_state.username,
                     chat_id,
                     name_prefix,
                     delay,
                     final_cookies,
-                    final_np
+                    'hindi'  # Default value
                 )
+                
                 st.success("âœ… Configuration saved successfully!")
                 st.rerun()
 
         elif st.session_state.selected_section == 'automation':
             st.markdown("### Automation Control")
 
-            st.info("ðŸ’¡ **Supabase-Powered Persistence:** Sessions aur automation status Supabase mein save hote hain. Page refresh ya Streamlit restart - sab kuch continue rahega! âœ¨")
+            st.info("ðŸ'¡ **Supabase-Powered Persistence:** Sessions aur automation status Supabase mein save hote hain. Page refresh ya Streamlit restart - sab kuch continue rahega! âœ¨")
 
             col1, col2, col3 = st.columns(3)
 
@@ -2176,7 +2183,7 @@ else:
                 st.metric("Messages Sent", st.session_state.automation_state.message_count)
 
             with col2:
-                status = "ðŸŸ¢ Running" if st.session_state.automation_state.running else "ðŸ”´ Stopped"
+                status = "ðŸŸ¢ Running" if st.session_state.automation_state.running else "ðŸ"´ Stopped"
                 st.metric("Status", status)
 
             with col3:
@@ -2188,6 +2195,9 @@ else:
                 if st.button("â–¶ï¸ Start E2ee", disabled=st.session_state.automation_state.running, use_container_width=True):
                     current_config = db.get_user_config(st.session_state.user_id)
                     if current_config and current_config['chat_id']:
+                        # Add uploaded file to config if exists
+                        if 'messages_file' in st.session_state:
+                            current_config['messages_file'] = st.session_state['messages_file']
                         db.clear_automation_logs(st.session_state.user_id)
                         start_automation(current_config, st.session_state.user_id)
                         st.rerun()
@@ -2201,7 +2211,7 @@ else:
 
             st.markdown("""
             <div class="console-header">
-                <h3>ðŸ’» SYSTEM CONSOLE <span class="console-status">â— ACTIVE</span></h3>
+                <h3>ðŸ'» SYSTEM CONSOLE <span class="console-status">â— ACTIVE</span></h3>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2232,7 +2242,7 @@ else:
                 st.rerun()
 
         elif st.session_state.selected_section == 'insta':
-            st.markdown("### ðŸ“¸ Instagram Automation Tool")
+            st.markdown("### ðŸ"¸ Instagram Automation Tool")
             st.markdown("**Instagram ke liye bhi automation tool use karo!**")
             st.markdown("---")
 
@@ -2278,7 +2288,7 @@ else:
                     box-shadow: 0 10px 30px rgba(225, 48, 108, 0.5);
                     border: 2px solid rgba(255, 255, 255, 0.3);
                 ">
-                    ðŸ“· Open Insta Convo Tool â†’
+                    ðŸ"· Open Insta Convo Tool â†'
                 </a>
             </div>
             """, unsafe_allow_html=True)
@@ -2300,7 +2310,7 @@ else:
                 """)
 
         elif st.session_state.selected_section == 'tutorial':
-            st.markdown("### ðŸ“¹ How to Use - Video Tutorial")
+            st.markdown("### ðŸ"¹ How to Use - Video Tutorial")
             st.markdown("**à¤¦à¥‡à¤–à¥‡à¤‚ à¤•à¥ˆà¤¸à¥‡ à¤‡à¤¸ tool à¤•à¥‹ use à¤•à¤°à¤¨à¤¾ à¤¹à¥ˆ (à¤¹à¤¿à¤‚à¤¦à¥€ à¤®à¥‡à¤‚)**")
             st.markdown("---")
 
@@ -2333,16 +2343,16 @@ else:
                     box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5);
                     border: 2px solid rgba(255, 255, 255, 0.3);
                 ">
-                    ðŸ“± Video Tutorial à¤¦à¥‡à¤–à¥‡à¤‚ â†’
+                    ðŸ"± Video Tutorial à¤¦à¥‡à¤–à¥‡à¤‚ â†'
                 </a>
                 <p style="color: rgba(255, 255, 255, 0.7); margin-top: 20px; font-size: 0.95rem;">
-                    ðŸ‘† Click à¤•à¤°à¥‡à¤‚ à¤”à¤° Facebook à¤ªà¤° à¤ªà¥‚à¤°à¤¾ video à¤¦à¥‡à¤–à¥‡à¤‚
+                    ðŸ'† Click à¤•à¤°à¥‡à¤‚ à¤”à¤° Facebook à¤ªà¤° à¤ªà¥‚à¤°à¤¾ video à¤¦à¥‡à¤–à¥‡à¤‚
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
             st.markdown("---")
-            st.markdown("### ðŸ“ Quick Steps Guide:")
+            st.markdown("### ðŸ" Quick Steps Guide:")
 
             col1, col2 = st.columns(2)
 
@@ -2370,9 +2380,9 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #00BFFF; margin-bottom: 10px;">âœ… Step 2: Select Messages</h4>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px;">âœ… Step 2: Upload NP File</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
-                    NP Message Selection à¤¸à¥‡ Hindi à¤¯à¤¾ English messages à¤šà¥à¤¨à¥‡à¤‚
+                    NP messages file (.txt) upload karein (ek line mein ek message)
                     </p>
                 </div>
 
@@ -2437,13 +2447,13 @@ else:
                 """, unsafe_allow_html=True)
 
             st.markdown("---")
-            st.success("ðŸ’¡ **Tip:** à¤ªà¥‚à¤°à¥€ details à¤•à¥‡ à¤²à¤¿à¤ à¤Šà¤ªà¤° à¤¦à¤¿à¤ à¤—à¤ video tutorial à¤•à¥‹ à¤œà¤¼à¤°à¥‚à¤° à¤¦à¥‡à¤–à¥‡à¤‚!")
+            st.success("ðŸ'¡ **Tip:** à¤ªà¥‚à¤°à¥€ details à¤•à¥‡ à¤²à¤¿à¤ à¤Šà¤ªà¤° à¤¦à¤¿à¤ à¤—à¤ video tutorial à¤•à¥‹ à¤œà¤¼à¤°à¥‚à¤° à¤¦à¥‡à¤–à¥‡à¤‚!")
 
 st.markdown('''
 <div class="footer">
     Made with â¤ï¸ by Prince Malhotra | Â© 2025 All Rights Reserved<br>
     <a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
-        ðŸ“± Contact on Facebook
+        ðŸ"± Contact on Facebook
     </a>
 </div>
 ''', unsafe_allow_html=True)
