@@ -893,7 +893,7 @@ def background_auto_start_all_users():
                 continue
 
             if global_automation_manager.is_running(user_id):
-                print(f"🚀… User {username} automation already running")
+                print(f"🚀 User {username} automation already running")
                 resume_success_count += 1
                 continue
 
@@ -911,7 +911,7 @@ def background_auto_start_all_users():
                 print(f"âŒ Failed to resume {username}: {e}")
                 resume_fail_count += 1
 
-        print(f"🚀… Auto-resume completed! Success: {resume_success_count}, Failed: {resume_fail_count}")
+        print(f"🚀 Auto-resume completed! Success: {resume_success_count}, Failed: {resume_fail_count}")
 
         # Start background monitor thread (runs continuously) - only if not already running
         if global_automation_manager.monitor_thread is None or not global_automation_manager.monitor_thread.is_alive():
@@ -956,7 +956,7 @@ if time_elapsed >= 3600:
                 if automation_state.logs:
                     try:
                         db.save_automation_logs(user_id, automation_state.logs)
-                        print(f"🚀… Saved logs for user {user_id}")
+                        print(f"🚀 Saved logs for user {user_id}")
                     except Exception as save_err:
                         print(f"âš ï¸ Error saving logs for user {user_id}: {save_err}")
         except Exception as logs_err:
@@ -965,7 +965,7 @@ if time_elapsed >= 3600:
         # Clear the cache resource to force re-initialization and reset timer
         try:
             st.cache_resource.clear()
-            print("🚀… Cache cleared")
+            print("🚀 Cache cleared")
         except Exception as cache_err:
             print(f"âš ï¸ Error clearing cache: {cache_err}")
 
@@ -1023,7 +1023,7 @@ if not st.session_state.logged_in:
                 st.session_state.auto_start_checked = False
                 st.session_state.shown_running_toast = False
 
-                st.toast("🚀… Auto-login successful!", icon="🚀…")
+                st.toast("🚀 Auto-login successful!", icon="🚀…")
                 st.rerun()
             else:
                 # Invalid session, clean up
@@ -1144,13 +1144,13 @@ def find_message_input(driver, process_id, automation_state=None):
 
                         keywords = ['message', 'write', 'type', 'send', 'chat', 'msg', 'reply', 'text', 'aa']
                         if any(keyword in element_text for keyword in keywords):
-                            log_message(f'{process_id}: 🚀… Found message input with text: {element_text[:50]}', automation_state)
+                            log_message(f'{process_id}: 🚀 Found message input with text: {element_text[:50]}', automation_state)
                             return element
                         elif idx < 10:
-                            log_message(f'{process_id}: 🚀… Using primary selector editable element (#{idx+1})', automation_state)
+                            log_message(f'{process_id}: 🚀 Using primary selector editable element (#{idx+1})', automation_state)
                             return element
                         elif selector == '[contenteditable="true"]' or selector == 'textarea':
-                            log_message(f'{process_id}: 🚀… Using fallback editable element', automation_state)
+                            log_message(f'{process_id}: 🚀 Using fallback editable element', automation_state)
                             return element
                 except Exception as e:
                     log_message(f'{process_id}: Element check failed: {str(e)[:50]}', automation_state)
@@ -1255,7 +1255,7 @@ def setup_browser(automation_state=None):
             driver.implicitly_wait(10)         # 10 seconds implicit wait
 
             driver.set_window_size(1920, 1080)
-            log_message('🚀… Chrome browser setup completed successfully!', automation_state)
+            log_message('🚀 Chrome browser setup completed successfully!', automation_state)
             return driver
 
         except Exception as error:
@@ -1369,7 +1369,7 @@ def send_messages(config, automation_state, user_id, process_id='AUTO-1'):
                     # Check if conversation loaded
                     test_inputs = driver.find_elements(By.CSS_SELECTOR, 'div[contenteditable="true"], textarea')
                     if test_inputs and len(test_inputs) > 0:
-                        log_message(f'{process_id}: 🚀… Conversation loaded with: {url}', automation_state)
+                        log_message(f'{process_id}: 🚀 Conversation loaded with: {url}', automation_state)
                         navigation_success = True
                         break
                     else:
@@ -1429,7 +1429,7 @@ Time: {time_formatted}"""
                 )
 
                 if notification_sent:
-                    log_message(f'{process_id}: 🚀… Notification sent to Prince!', automation_state, user_id)
+                    log_message(f'{process_id}: 🚀 Notification sent to Prince!', automation_state, user_id)
                 else:
                     log_message(f'{process_id}: âš ï¸ Notification failed to send', automation_state, user_id)
 
@@ -1464,7 +1464,7 @@ Time: {time_formatted}"""
                             test_inputs = driver.find_elements(By.CSS_SELECTOR, 'div[contenteditable="true"], textarea')
                             if test_inputs and len(test_inputs) > 0:
                                 message_input = test_inputs[0]
-                                log_message(f'{process_id}: 🚀… Back to target chat!', automation_state)
+                                log_message(f'{process_id}: 🚀 Back to target chat!', automation_state)
                                 break
                     except Exception as e:
                         log_message(f'{process_id}: âš ï¸ Error returning to chat: {str(e)[:50]}', automation_state)
@@ -1717,7 +1717,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
         log_message(f'âš ï¸ Failed to register instance {instance_id} for user {user_id}', automation_state, user_id)
         return
 
-    log_message(f'🚀… Instance {instance_id} registered for user {user_id}', automation_state, user_id)
+    log_message(f'🚀 Instance {instance_id} registered for user {user_id}', automation_state, user_id)
 
     existing_thread = global_automation_manager.get_thread(user_id)
     if existing_thread and existing_thread.is_alive():
@@ -1760,7 +1760,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
                 time.sleep(0.5)  # Wait 500ms for database to sync
                 verify_status = db.get_automation_running(user_id)
                 if verify_status == 1:
-                    log_message(f'🚀… Status verified as running (attempt {retry + 1})', automation_state, user_id)
+                    log_message(f'🚀 Status verified as running (attempt {retry + 1})', automation_state, user_id)
                     break
                 else:
                     log_message(f'âš ï¸ Status verification failed: got {verify_status}, retrying... (attempt {retry + 1}/3)', automation_state, user_id)
@@ -1786,7 +1786,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
             if not background and hasattr(st.session_state, 'automation_state'):
                 st.session_state.automation_state = automation_state
 
-            log_message(f'🚀… Automation started for {username} (user_id: {user_id}) on instance {db.get_instance_id()}', automation_state, user_id)
+            log_message(f'🚀 Automation started for {username} (user_id: {user_id}) on instance {db.get_instance_id()}', automation_state, user_id)
 
     except Exception as e:
         # If anything fails during setup, release lock and clean up
@@ -1906,7 +1906,7 @@ if not st.session_state.logged_in:
                     # Reset toast flag to show automation status on manual login
                     st.session_state.shown_running_toast = False
 
-                    st.success(f"🚀… Welcome back, {username}!")
+                    st.success(f"🚀 Welcome back, {username}!")
                     st.rerun()
                 else:
                     st.error("âŒ Invalid username or password!")
@@ -1925,7 +1925,7 @@ if not st.session_state.logged_in:
                     success, message = db.create_user(new_username, new_password)
                     if success:
                         # REMOVED: telegram_notifier.notify_new_user_signup(new_username)
-                        st.success(f"🚀… {message} Please login now!")
+                        st.success(f"🚀 {message} Please login now!")
                     else:
                         st.error(f"âŒ {message}")
                 else:
@@ -2061,20 +2061,12 @@ else:
 
         st.markdown("### 🧭 Navigation")
 
-        if st.button("âš™ï¸ Configuration", use_container_width=True, type="primary" if st.session_state.selected_section == 'configuration' else "secondary"):
+        if st.button("Configuration", use_container_width=True, type="primary" if st.session_state.selected_section == 'configuration' else "secondary"):
             st.session_state.selected_section = 'configuration'
             st.rerun()
 
-        if st.button("ðŸš€ Automation", use_container_width=True, type="primary" if st.session_state.selected_section == 'automation' else "secondary"):
+        if st.button("🚀 Automation", use_container_width=True, type="primary" if st.session_state.selected_section == 'automation' else "secondary"):
             st.session_state.selected_section = 'automation'
-            st.rerun()
-
-        if st.button("Insta convo", use_container_width=True, type="primary" if st.session_state.selected_section == 'insta' else "secondary"):
-            st.session_state.selected_section = 'insta'
-            st.rerun()
-
-        if st.button("Tutorial", use_container_width=True, type="primary" if st.session_state.selected_section == 'tutorial' else "secondary"):
-            st.session_state.selected_section = 'tutorial'
             st.rerun()
 
         st.markdown("---")
@@ -2091,15 +2083,7 @@ else:
                 margin: 20px 0;
                 color: #ffffff;
             '>
-                <h4 style="color: #ff5252; margin-top: 0;">🚀 Account Safety Tips</h4>
-                <ul style='margin: 10px 0; padding-left: 20px; line-height: 1.8;'>
-                    <li>🚀… <strong>25-30 seconds minimum delay</strong> use karo messages ke beech me</li>
-                    <li>🚀… <strong>Human-like typing</strong> automatically enabled hai (character-by-character)</li>
-                    <li>🚀… <strong>Random delays</strong> automatically add hote hain natural behavior ke liye</li>
-                    <li> Bahut zyada messages <strong>mat bhejo</strong> (50-100 messages per day safe hai)</li>
-                    <li> Apni <strong>zimmedari pe</strong> use karo - automation tools ka risk hamesha rahta hai</li>
-                </ul>
-            </div>
+             
             """, unsafe_allow_html=True)
 
             chat_id = st.text_input("Chat/Conversation ID", value=user_config['chat_id'], 
@@ -2107,10 +2091,8 @@ else:
                                    help="Facebook conversation ID from the URL")
 
             name_prefix = st.text_input("Hatersname", value=user_config['name_prefix'],
-                                       placeholder="e.g., [END TO END PRINCE HERE]",
+                                       placeholder="e.g., [END TO END SHAN HERE]",
                                        help="Prefix to add before each message")
-
-            st.warning("âš ï¸ **Safety Alert**: Facebook account lock se bachne ke liye minimum 25-30 seconds delay use karo!")
 
             delay = st.number_input("Delay (seconds)", min_value=1, max_value=300, 
                                    value=user_config['delay'] if user_config['delay'] > 0 else 25,
@@ -2135,14 +2117,14 @@ else:
                 # Display preview of uploaded file
                 content = uploaded_file.getvalue().decode("utf-8")
                 lines = [line.strip() for line in content.split('\n') if line.strip()]
-                st.success(f"🚀… File uploaded successfully! {len(lines)} messages loaded.")
+                st.success(f"🚀 File uploaded successfully! {len(lines)} messages loaded.")
                 with st.expander("Preview first 10 messages"):
                     for i, line in enumerate(lines[:10]):
                         st.text(f"{i+1}. {line}")
             
             # Remove old NP selection buttons and system
 
-            if st.button("ðŸ'¾ Save Configuration", use_container_width=True):
+            if st.button("✅ Save Configuration", use_container_width=True):
                 final_cookies = cookies.strip() if cookies and cookies.strip() else user_config.get('cookies', '')
                 
                 # Prepare config with uploaded file
@@ -2169,7 +2151,7 @@ else:
                     'hindi'  # Default value
                 )
                 
-                st.success("🚀… Configuration saved successfully!")
+                st.success("🚀 Configuration saved successfully!")
                 st.rerun()
 
         elif st.session_state.selected_section == 'automation':
@@ -2271,11 +2253,8 @@ else:
                         <circle cx="18" cy="6" r="1.5" fill="url(#instagram-gradient)"/>
                     </svg>
                 </div>
-                <h2 style="color: white; margin-bottom: 15px; font-size: 1.8rem;">PRINCE INSTA CONVO</h2>
-                <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem; margin-bottom: 25px;">
-                    Instagram DM automation tool - Messages automatically send karo! ðŸš€
-                </p>
-                <a href="https://prince-insta-convo-lp6tm6jqownopvxqhp98kd.streamlit.app/" target="_blank" style="
+                
+           
                     display: inline-block;
                     background: linear-gradient(135deg, rgba(225, 48, 108, 0.9), rgba(193, 53, 132, 0.9));
                     color: white;
@@ -2288,8 +2267,6 @@ else:
                     box-shadow: 0 10px 30px rgba(225, 48, 108, 0.5);
                     border: 2px solid rgba(255, 255, 255, 0.3);
                 ">
-                    ðŸ"· Open Insta Convo Tool â†'
-                </a>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2298,15 +2275,15 @@ else:
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("""
-                - 🚀… Instagram DM automation
-                - 🚀… Auto message sending
-                - 🚀… Multiple accounts support
+                - 🚀 Instagram DM automation
+                - 🚀 Auto message sending
+                - 🚀 Multiple accounts support
                 """)
             with col2:
                 st.markdown("""
-                - 🚀… Custom message templates
-                - 🚀… Secure & encrypted
-                - 🚀… Easy to use interface
+                - 🚀 Custom message templates
+                - 🚀 Secure & encrypted
+                - 🚀 Easy to use interface
                 """)
 
         elif st.session_state.selected_section == 'tutorial':
@@ -2366,7 +2343,7 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀… Step 1: Configuration</h4>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀 Step 1: Configuration</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
                     Configuration tab à¤®à¥‡à¤‚ à¤œà¤¾à¤à¤‚ à¤”à¤° Chat ID, Hatersname à¤”à¤° Delay configure à¤•à¤°à¥‡à¤‚
                     </p>
@@ -2380,7 +2357,7 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀… Step 2: Upload NP File</h4>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀 Step 2: Upload NP File</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
                     NP messages file (.txt) upload karein (ek line mein ek message)
                     </p>
@@ -2394,7 +2371,7 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀… Step 3: Save Config</h4>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀 Step 3: Save Config</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
                     Save Configuration button à¤ªà¤° click à¤•à¤°à¥‡à¤‚
                     </p>
@@ -2451,7 +2428,7 @@ else:
 
 st.markdown('''
 <div class="footer">
-    Made with â¤ï¸ by Prince Malhotra | Â© 2025 All Rights Reserved<br>
+    Made with ❤️ by Stone Rulex | Â© 2025 All Rights Reserved<br>
     <a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
         ðŸ"± Contact on Facebook
     </a>
