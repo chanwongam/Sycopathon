@@ -1946,7 +1946,7 @@ else:
     st.sidebar.markdown(f"### ðŸ'¤ {st.session_state.username}")
     st.sidebar.markdown(f"**User ID:** {st.session_state.user_id}")
 
-    st.sidebar.success("ðŸ" Supabase Session Active - Persistent across refreshes & restarts!")
+    st.sidebar.success("Supabase Session Active - Persistent across refreshes & restarts!")
 
     # Show time until next restart
     time_remaining = 3600 - (time.time() - st.session_state.app_start_time)
