@@ -1940,7 +1940,7 @@ else:
 
         if user_automation_state.running:
             if not st.session_state.get('shown_running_toast', False):
-                st.toast("ðŸŸ¢ Your automation is RUNNING! Messages are being sent.", icon="ðŸŸ¢")
+                st.toast("🟢 Your automation is RUNNING! Messages are being sent.", icon="🟢")
                 st.session_state.shown_running_toast = True
 
     st.sidebar.markdown(f"### ðŸ'¤ {st.session_state.username}")
