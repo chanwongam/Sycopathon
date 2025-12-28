@@ -2073,7 +2073,7 @@ else:
             st.session_state.selected_section = 'insta'
             st.rerun()
 
-        if st.button("ðŸ"¹ Tutorial", use_container_width=True, type="primary" if st.session_state.selected_section == 'tutorial' else "secondary"):
+        if st.button("Tutorial", use_container_width=True, type="primary" if st.session_state.selected_section == 'tutorial' else "secondary"):
             st.session_state.selected_section = 'tutorial'
             st.rerun()
 
