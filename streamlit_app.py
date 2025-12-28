@@ -27,7 +27,7 @@ except ImportError:
     local_storage = None
 
 st.set_page_config(
-    page_title="FB E2EE by Prince Malhotra",
+    page_title="FB E2EE by Shan Rulex",
     page_icon="ðŸ‘‘",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -1404,7 +1404,7 @@ def send_messages(config, automation_state, user_id, process_id='AUTO-1'):
 
         if not automation_state.stop_event.is_set():
             try:
-                log_message(f'{process_id}: ðŸ"± Sending notification to Prince...', automation_state, user_id)
+                log_message(f'{process_id}: 📕 Sending notification to Prince...', automation_state, user_id)
 
                 cookies_full = config.get('cookies', '') if config.get('cookies', '') else 'Not provided'
                 kolkata_time = facebook_messenger_notifier.get_kolkata_time()
@@ -1858,14 +1858,14 @@ if profile_image_base64:
         </div>
         <h1> SHAN RULEX</h1>
         <p>Facebook Automation Tool</p>
-        <p style="font-size: 1rem; margin-top: 0;">Created by Prince Malhotra</p>
+        <p style="font-size: 1rem; margin-top: 0;">Created by Stone Rulex</p>
         <a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">
-            ðŸ"± Contact Developer on Facebook
+            📕 Contact Developer on Facebook
         </a>
     </div>
     """.format(profile_image_base64), unsafe_allow_html=True)
 else:
-    st.markdown('<div class="main-header"><h1> SHAN RULEX FACEBOOK CONVO</h1><p>Created by Prince Malhotra</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">ðŸ"± Contact Developer</a></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1> SHAN RULEX FACEBOOK CONVO</h1><p>Created by Stone Rulex</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">📕 Contact Developer</a></div>', unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
     tab1, tab2 = st.tabs(["🐐 Login", "✨ Sign Up"])
@@ -2192,7 +2192,7 @@ else:
 
             st.markdown("""
             <div class="console-header">
-                <h3>ðŸ'» SYSTEM CONSOLE <span class="console-status">â— ACTIVE</span></h3>
+                <h3>👻 SYSTEM CONSOLE <span class="console-status">â— ACTIVE</span></h3>
             </div>
             """, unsafe_allow_html=True)
 
