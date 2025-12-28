@@ -2310,7 +2310,7 @@ else:
                 """)
 
         elif st.session_state.selected_section == 'tutorial':
-            st.markdown("### ðŸ"¹ How to Use - Video Tutorial")
+            st.markdown("### How to Use - Video Tutorial")
             st.markdown("**à¤¦à¥‡à¤–à¥‡à¤‚ à¤•à¥ˆà¤¸à¥‡ à¤‡à¤¸ tool à¤•à¥‹ use à¤•à¤°à¤¨à¤¾ à¤¹à¥ˆ (à¤¹à¤¿à¤‚à¤¦à¥€ à¤®à¥‡à¤‚)**")
             st.markdown("---")
 
