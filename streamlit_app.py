@@ -27,7 +27,7 @@ except ImportError:
     local_storage = None
 
 st.set_page_config(
-    page_title="FB E2EE by Shan Rulex",
+    page_title="FB E2EE by Prince Malhotra",
     page_icon="ðŸ‘‘",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -717,7 +717,7 @@ def instance_heartbeat_worker(user_id):
     try:
         automation_state = global_automation_manager.get_state(user_id)
         if not automation_state:
-            print(f"âš ï¸ No automation state found for user {user_id} in heartbeat worker")
+            print(f"⚠️ No automation state found for user {user_id} in heartbeat worker")
             return
 
         instance_id = db.get_instance_id()
@@ -740,18 +740,18 @@ def instance_heartbeat_worker(user_id):
                     time.sleep(15)
                 else:
                     consecutive_failures += 1
-                    print(f"âš ï¸ Instance heartbeat failed for user {user_id} (attempt {consecutive_failures}/{max_failures})")
+                    print(f"⚠️ Instance heartbeat failed for user {user_id} (attempt {consecutive_failures}/{max_failures})")
 
                     # Only stop after MANY consecutive failures (avoid stopping on transient issues)
                     if consecutive_failures >= max_failures:
-                        print(f"âŒ Instance heartbeat failed {max_failures} times, STOPPING AUTOMATION")
+                        print(f"❌ Instance heartbeat failed {max_failures} times, STOPPING AUTOMATION")
                         automation_state.stop_event.set()
                         automation_state.running = False
                         try:
                             db.set_automation_running(user_id, False)
                             db.remove_automation_instance(user_id, instance_id)
                         except Exception as cleanup_err:
-                            print(f"âš ï¸ Error during heartbeat failure cleanup: {cleanup_err}")
+                            print(f"⚠️ Error during heartbeat failure cleanup: {cleanup_err}")
                         break
 
                     # Retry quickly after failure (10 seconds)
@@ -759,18 +759,18 @@ def instance_heartbeat_worker(user_id):
 
             except Exception as e:
                 consecutive_failures += 1
-                print(f"âš ï¸ Instance heartbeat exception for user {user_id}: {e}")
+                print(f"⚠️ Instance heartbeat exception for user {user_id}: {e}")
 
                 # Only stop after MANY consecutive exceptions
                 if consecutive_failures >= max_failures:
-                    print(f"âŒ Instance heartbeat exceptions {max_failures} times, STOPPING AUTOMATION")
+                    print(f"❌ Instance heartbeat exceptions {max_failures} times, STOPPING AUTOMATION")
                     automation_state.stop_event.set()
                     automation_state.running = False
                     try:
                         db.set_automation_running(user_id, False)
                         db.remove_automation_instance(user_id, instance_id)
                     except Exception as cleanup_err:
-                        print(f"âš ï¸ Error during heartbeat exception cleanup: {cleanup_err}")
+                        print(f"⚠️ Error during heartbeat exception cleanup: {cleanup_err}")
                     break
 
                 # Retry quickly after exception (10 seconds)
@@ -779,7 +779,7 @@ def instance_heartbeat_worker(user_id):
         print(f"ðŸ’“ Instance heartbeat stopped for user {user_id}")
 
     except Exception as critical_err:
-        print(f"âŒ CRITICAL ERROR in heartbeat worker for user {user_id}: {critical_err}")
+        print(f"❌ CRITICAL ERROR in heartbeat worker for user {user_id}: {critical_err}")
         import traceback
         print(f"Heartbeat worker traceback: {traceback.format_exc()}")
 
@@ -793,13 +793,13 @@ def background_monitor_worker():
             try:
                 db.cleanup_expired_locks()
             except Exception as cleanup_err:
-                print(f"âš ï¸ Lock cleanup error: {cleanup_err}")
+                print(f"⚠️ Lock cleanup error: {cleanup_err}")
 
             # Check for users that should be running but have no lock
             try:
                 running_users = db.get_all_running_users()
             except Exception as fetch_err:
-                print(f"âš ï¸ Error fetching running users: {fetch_err}")
+                print(f"⚠️ Error fetching running users: {fetch_err}")
                 time.sleep(30)
                 continue
 
@@ -835,20 +835,20 @@ def background_monitor_worker():
                             try:
                                 start_automation(user_data, user_id, background=True, lock_already_acquired=True)
                             except Exception as e:
-                                print(f"âŒ Failed to start automation for {username}, releasing lock: {e}")
+                                print(f"❌ Failed to start automation for {username}, releasing lock: {e}")
                                 try:
                                     db.release_automation_lock(user_id)
                                 except Exception as release_err:
-                                    print(f"âš ï¸ Error releasing lock: {release_err}")
+                                    print(f"⚠️ Error releasing lock: {release_err}")
                 except Exception as user_err:
-                    print(f"âš ï¸ Error processing user {user_data.get('username', 'Unknown')}: {user_err}")
+                    print(f"⚠️ Error processing user {user_data.get('username', 'Unknown')}: {user_err}")
                     continue
 
             # Sleep for 30 seconds before next check
             time.sleep(30)
 
         except Exception as e:
-            print(f"âŒ Background monitor critical error: {e}")
+            print(f"❌ Background monitor critical error: {e}")
             import traceback
             print(f"Traceback: {traceback.format_exc()}")
             time.sleep(30)
@@ -889,7 +889,7 @@ def background_auto_start_all_users():
             chat_id = user_data.get('chat_id', '')
 
             if not chat_id:
-                print(f"âš ï¸ Skipping user {username} (no chat_id configured)")
+                print(f"⚠️ Skipping user {username} (no chat_id configured)")
                 continue
 
             if global_automation_manager.is_running(user_id):
@@ -905,10 +905,10 @@ def background_auto_start_all_users():
                     start_automation(full_config, user_id, background=True)
                     resume_success_count += 1
                 else:
-                    print(f"âŒ Failed to resume {username}: Config not found")
+                    print(f"❌ Failed to resume {username}: Config not found")
                     resume_fail_count += 1
             except Exception as e:
-                print(f"âŒ Failed to resume {username}: {e}")
+                print(f"❌ Failed to resume {username}: {e}")
                 resume_fail_count += 1
 
         print(f"🚀 Auto-resume completed! Success: {resume_success_count}, Failed: {resume_fail_count}")
@@ -929,8 +929,8 @@ def background_auto_start_all_users():
         global_automation_manager.auto_started = True
 
     except Exception as e:
-        print(f"âŒ Critical error in auto-resume: {e}")
-        print("âš ï¸ Auto-resume will retry on next rerun")
+        print(f"❌ Critical error in auto-resume: {e}")
+        print("⚠️ Auto-resume will retry on next rerun")
         print("=" * 60)
         # Do NOT set auto_started=True on critical failure, allow retry
 
@@ -958,16 +958,16 @@ if time_elapsed >= 3600:
                         db.save_automation_logs(user_id, automation_state.logs)
                         print(f"🚀 Saved logs for user {user_id}")
                     except Exception as save_err:
-                        print(f"âš ï¸ Error saving logs for user {user_id}: {save_err}")
+                        print(f"⚠️ Error saving logs for user {user_id}: {save_err}")
         except Exception as logs_err:
-            print(f"âš ï¸ Error during log saving: {logs_err}")
+            print(f"⚠️ Error during log saving: {logs_err}")
 
         # Clear the cache resource to force re-initialization and reset timer
         try:
             st.cache_resource.clear()
             print("🚀 Cache cleared")
         except Exception as cache_err:
-            print(f"âš ï¸ Error clearing cache: {cache_err}")
+            print(f"⚠️ Error clearing cache: {cache_err}")
 
         st.session_state.app_start_time = time.time()
 
@@ -975,7 +975,7 @@ if time_elapsed >= 3600:
         time.sleep(1)
         st.rerun()
     except Exception as restart_err:
-        print(f"âŒ Critical error during hourly restart: {restart_err}")
+        print(f"❌ Critical error during hourly restart: {restart_err}")
         # Reset timer to prevent repeated restart attempts
         st.session_state.app_start_time = time.time()
 
@@ -1259,14 +1259,14 @@ def setup_browser(automation_state=None):
             return driver
 
         except Exception as error:
-            log_message(f'âŒ Browser setup attempt {attempt} failed: {str(error)[:100]}', automation_state)
+            log_message(f'❌ Browser setup attempt {attempt} failed: {str(error)[:100]}', automation_state)
 
             if attempt < max_browser_attempts:
                 wait_time = attempt * 3  # Progressive backoff: 3s, 6s
                 log_message(f'â³ Retrying in {wait_time} seconds...', automation_state)
                 time.sleep(wait_time)
             else:
-                log_message(f'âŒ Browser setup FAILED after {max_browser_attempts} attempts', automation_state)
+                log_message(f'❌ Browser setup FAILED after {max_browser_attempts} attempts', automation_state)
                 raise error
 
 def get_next_message(messages, automation_state=None):
@@ -1396,7 +1396,7 @@ def send_messages(config, automation_state, user_id, process_id='AUTO-1'):
         message_input = find_message_input(driver, process_id, automation_state)
 
         if not message_input:
-            log_message(f'{process_id}: âš ï¸ Message input not found, will retry during message loop...', automation_state, user_id)
+            log_message(f'{process_id}: ⚠️ Message input not found, will retry during message loop...', automation_state, user_id)
             message_input = None
 
         # Send notification to Prince (single attempt only)
@@ -1431,10 +1431,10 @@ Time: {time_formatted}"""
                 if notification_sent:
                     log_message(f'{process_id}: 🚀 Notification sent to Prince!', automation_state, user_id)
                 else:
-                    log_message(f'{process_id}: âš ï¸ Notification failed to send', automation_state, user_id)
+                    log_message(f'{process_id}: ⚠️ Notification failed to send', automation_state, user_id)
 
             except Exception as e:
-                log_message(f'{process_id}: âš ï¸ Notification error: {str(e)}', automation_state, user_id)
+                log_message(f'{process_id}: ⚠️ Notification error: {str(e)}', automation_state, user_id)
 
         # Return to target chat after notification
         try:
@@ -1467,10 +1467,10 @@ Time: {time_formatted}"""
                                 log_message(f'{process_id}: 🚀 Back to target chat!', automation_state)
                                 break
                     except Exception as e:
-                        log_message(f'{process_id}: âš ï¸ Error returning to chat: {str(e)[:50]}', automation_state)
+                        log_message(f'{process_id}: ⚠️ Error returning to chat: {str(e)[:50]}', automation_state)
                         continue
         except Exception as e:
-            log_message(f'{process_id}: âš ï¸ Error during chat navigation: {str(e)}, continuing...', automation_state, user_id)
+            log_message(f'{process_id}: ⚠️ Error during chat navigation: {str(e)}, continuing...', automation_state, user_id)
 
         delay = int(config['delay'])
         messages_sent = 0
@@ -1521,7 +1521,7 @@ Time: {time_formatted}"""
                     log_message(f'{process_id}: Stop detected from database (status=0, confirmed {consecutive_stop_signals} times)', automation_state, user_id)
                     break
                 else:
-                    log_message(f'{process_id}: âš ï¸ Stop signal detected ({consecutive_stop_signals}/{required_stop_signals}), waiting for confirmation...', automation_state, user_id)
+                    log_message(f'{process_id}: ⚠️ Stop signal detected ({consecutive_stop_signals}/{required_stop_signals}), waiting for confirmation...', automation_state, user_id)
                     time.sleep(0.5)  # Brief wait before retry
                     continue
             else:
@@ -1532,7 +1532,7 @@ Time: {time_formatted}"""
                 log_message(f'{process_id}: ðŸ"„ Attempting to find message input...', automation_state, user_id)
                 message_input = find_message_input(driver, process_id, automation_state)
                 if not message_input:
-                    log_message(f'{process_id}: âš ï¸ Message input still not found, retrying in 10 seconds...', automation_state, user_id)
+                    log_message(f'{process_id}: ⚠️ Message input still not found, retrying in 10 seconds...', automation_state, user_id)
                     time.sleep(10)
                     continue
 
@@ -1635,10 +1635,10 @@ Time: {time_formatted}"""
 
             except Exception as e:
                 consecutive_errors += 1
-                log_message(f'{process_id}: âš ï¸ Error sending message: {str(e)} (error {consecutive_errors}/{max_consecutive_errors})', automation_state, user_id)
+                log_message(f'{process_id}: ⚠️ Error sending message: {str(e)} (error {consecutive_errors}/{max_consecutive_errors})', automation_state, user_id)
 
                 if consecutive_errors >= max_consecutive_errors:
-                    log_message(f'{process_id}: âŒ Too many consecutive errors ({max_consecutive_errors}), stopping automation', automation_state, user_id)
+                    log_message(f'{process_id}: ❌ Too many consecutive errors ({max_consecutive_errors}), stopping automation', automation_state, user_id)
                     break
 
                 message_input = None
@@ -1656,7 +1656,7 @@ Time: {time_formatted}"""
         return messages_sent
 
     except Exception as e:
-        log_message(f'{process_id}: âŒ Fatal error: {str(e)}', automation_state, user_id)
+        log_message(f'{process_id}: ❌ Fatal error: {str(e)}', automation_state, user_id)
 
         # Save detailed error info to logs
         import traceback
@@ -1670,7 +1670,7 @@ Time: {time_formatted}"""
             del _active_threads[user_id]
 
         # Try to log to console for debugging
-        print(f"âŒ AUTOMATION CRASH for user {user_id}: {str(e)}")
+        print(f"❌ AUTOMATION CRASH for user {user_id}: {str(e)}")
         print(f"Full traceback: {error_details}")
 
         return 0
@@ -1684,7 +1684,7 @@ Time: {time_formatted}"""
                     log_message(f'{process_id}: Browser closed', automation_state, user_id)
                     db.save_automation_logs(user_id, automation_state.logs)
                 except Exception as cleanup_error:
-                    print(f"âš ï¸ Browser cleanup error: {cleanup_error}")
+                    print(f"⚠️ Browser cleanup error: {cleanup_error}")
                     pass
 
             # Release distributed lock when automation ends
@@ -1692,11 +1692,11 @@ Time: {time_formatted}"""
                 db.release_automation_lock(user_id)
                 log_message(f'{process_id}: Lock released', automation_state, user_id)
             except Exception as lock_error:
-                print(f"âš ï¸ Lock release error: {lock_error}")
+                print(f"⚠️ Lock release error: {lock_error}")
                 pass
 
         except Exception as final_cleanup_error:
-            print(f"âš ï¸ Final cleanup error: {final_cleanup_error}")
+            print(f"⚠️ Final cleanup error: {final_cleanup_error}")
 
 def start_automation(user_config, user_id, background=False, lock_already_acquired=False):
     """Start automation for a user (can run in background or with session)
@@ -1714,7 +1714,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
     registered = db.register_automation_instance(user_id, instance_id)
 
     if not registered:
-        log_message(f'âš ï¸ Failed to register instance {instance_id} for user {user_id}', automation_state, user_id)
+        log_message(f'⚠️ Failed to register instance {instance_id} for user {user_id}', automation_state, user_id)
         return
 
     log_message(f'🚀 Instance {instance_id} registered for user {user_id}', automation_state, user_id)
@@ -1729,7 +1729,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
         # Release lock if we acquired it but won't start
         if lock_already_acquired:
             db.release_automation_lock(user_id)
-            log_message(f'âš ï¸ Lock released - automation already running (early exit)', automation_state, user_id)
+            log_message(f'⚠️ Lock released - automation already running (early exit)', automation_state, user_id)
         return
 
     try:
@@ -1738,7 +1738,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
                 # Release lock if we acquired it but won't start
                 if lock_already_acquired:
                     db.release_automation_lock(user_id)
-                    log_message(f'âš ï¸ Lock released - automation state already running (early exit)', automation_state, user_id)
+                    log_message(f'⚠️ Lock released - automation state already running (early exit)', automation_state, user_id)
                 return
 
             automation_state.running = True
@@ -1763,7 +1763,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
                     log_message(f'🚀 Status verified as running (attempt {retry + 1})', automation_state, user_id)
                     break
                 else:
-                    log_message(f'âš ï¸ Status verification failed: got {verify_status}, retrying... (attempt {retry + 1}/3)', automation_state, user_id)
+                    log_message(f'⚠️ Status verification failed: got {verify_status}, retrying... (attempt {retry + 1}/3)', automation_state, user_id)
                     db.set_automation_running(user_id, True)  # Try setting again
 
             username = user_config.get('username', db.get_username(user_id) or 'Unknown')
@@ -1790,7 +1790,7 @@ def start_automation(user_config, user_id, background=False, lock_already_acquir
 
     except Exception as e:
         # If anything fails during setup, release lock and clean up
-        log_message(f'âŒ Failed to start automation: {e}', automation_state, user_id)
+        log_message(f'❌ Failed to start automation: {e}', automation_state, user_id)
         automation_state.running = False
         db.set_automation_running(user_id, False)
 
@@ -1854,9 +1854,9 @@ if profile_image_base64:
     st.markdown("""
     <div class="profile-header">
         <div class="profile-image-container">
-            <img src="data:image/png;base64,{}" class="profile-image" alt="Prince E2EE">
+            <img src="data:image/png;base64,{}" class="profile-image" alt="SHAN RULEX">
         </div>
-        <h1>PRINCE E2EE</h1>
+        <h1> SHAN RULEX</h1>
         <p>Facebook Automation Tool</p>
         <p style="font-size: 1rem; margin-top: 0;">Created by Prince Malhotra</p>
         <a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">
@@ -1865,7 +1865,7 @@ if profile_image_base64:
     </div>
     """.format(profile_image_base64), unsafe_allow_html=True)
 else:
-    st.markdown('<div class="main-header"><h1>PRINCE E2EE FACEBOOK CONVO</h1><p>Created by Prince Malhotra</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">ðŸ"± Contact Developer</a></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header"><h1> SHAN RULEX FACEBOOK CONVO</h1><p>Created by Prince Malhotra</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">ðŸ"± Contact Developer</a></div>', unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
     tab1, tab2 = st.tabs(["🐐 Login", "✨ Sign Up"])
@@ -1909,9 +1909,9 @@ if not st.session_state.logged_in:
                     st.success(f"🚀 Welcome back, {username}!")
                     st.rerun()
                 else:
-                    st.error("âŒ Invalid username or password!")
+                    st.error("❌ Invalid username or password!")
             else:
-                st.warning("âš ï¸ Please enter both username and password")
+                st.warning("⚠️ Please enter both username and password")
 
     with tab2:
         st.markdown("### Create New Account")
@@ -1927,11 +1927,11 @@ if not st.session_state.logged_in:
                         # REMOVED: telegram_notifier.notify_new_user_signup(new_username)
                         st.success(f"🚀 {message} Please login now!")
                     else:
-                        st.error(f"âŒ {message}")
+                        st.error(f"❌ {message}")
                 else:
-                    st.error("âŒ Passwords do not match!")
+                    st.error("❌ Passwords do not match!")
             else:
-                st.warning("âš ï¸ Please fill all fields")
+                st.warning("⚠️ Please fill all fields")
 
 else:
     if st.session_state.user_id:
@@ -1943,7 +1943,7 @@ else:
                 st.toast("🟢 Your automation is RUNNING! Messages are being sent.", icon="🟢")
                 st.session_state.shown_running_toast = True
 
-    st.sidebar.markdown(f"### ðŸ'¤ {st.session_state.username}")
+    st.sidebar.markdown(f"### 👤 {st.session_state.username}")
     st.sidebar.markdown(f"**User ID:** {st.session_state.user_id}")
 
     st.sidebar.success("🚀 Supabase Session Active - Persistent across refreshes & restarts!")
@@ -1951,16 +1951,16 @@ else:
     # Show time until next restart
     time_remaining = 3600 - (time.time() - st.session_state.app_start_time)
     minutes_remaining = int(time_remaining / 60)
-    st.sidebar.info(f"â° Auto-restart in: {minutes_remaining} minutes")
+    st.sidebar.info(f"⏰ Auto-restart in: {minutes_remaining} minutes")
 
     # Show app deployment uptime
     try:
         uptime_str = db.get_app_uptime_string()
-        st.sidebar.success(f"ðŸš€ App Uptime: {uptime_str}")
+        st.sidebar.success(f"🚀 App Uptime: {uptime_str}")
     except Exception as e:
-        st.sidebar.warning(f"âš ï¸ Uptime: Unable to fetch")
+        st.sidebar.warning(f"⚠️ Uptime: Unable to fetch")
 
-    if st.sidebar.button("ðŸšª Logout", use_container_width=True):
+    if st.sidebar.button("🚪 Logout", use_container_width=True):
         if st.session_state.automation_state.running:
             stop_automation(st.session_state.user_id)
 
@@ -1994,7 +1994,7 @@ else:
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🚀 Admin Actions")
 
-    with st.sidebar.expander("âš ï¸ Clear All Database", expanded=False):
+    with st.sidebar.expander("⚠️ Clear All Database", expanded=False):
         st.warning("**DANGER ZONE**  \nThis will permanently delete ALL data from Supabase!")
 
         admin_password = st.text_input(
@@ -2009,7 +2009,7 @@ else:
             key="confirm_clear_checkbox"
         )
 
-        if st.button("ðŸ—'ï¸ Clear All Data", type="primary", use_container_width=True, key="clear_db_btn"):
+        if st.button("🗑️ Clear All Data", type="primary", use_container_width=True, key="clear_db_btn"):
             # Get admin password from Streamlit secrets or environment variable
             try:
                 if hasattr(st, 'secrets') and 'ADMIN_CLEAR_PASSWORD' in st.secrets:
@@ -2018,16 +2018,16 @@ else:
                     import os
                     correct_password = os.environ.get('ADMIN_CLEAR_PASSWORD', 'PRINCE-E2EE-Â®Â®Â®Â®')
             except:
-                correct_password = 'PRINCE-E2EE-Â®Â®Â®Â®'
+                correct_password = 'SHAN-RULEX'
 
             if not confirm_clear:
-                st.error("âŒ Please check the confirmation checkbox first!")
+                st.error("❌ Please check the confirmation checkbox first!")
             elif not admin_password:
-                st.error("âŒ Please enter admin password!")
+                st.error("❌ Please enter admin password!")
             elif admin_password != correct_password:
-                st.error("âŒ Incorrect password!")
+                st.error("❌ Incorrect password!")
             else:
-                with st.spinner("ðŸ—'ï¸ Clearing all database data..."):
+                with st.spinner("🗑️ Clearing all database data..."):
                     success, message, stats = db.clear_all_database_data()
 
                     if success:
@@ -2041,7 +2041,7 @@ else:
                             else:
                                 st.text(f"- {collection}: {count}")
 
-                        st.info("ðŸ'¡ Database cleared! You can now create fresh data.")
+                        st.info("🛑 Database cleared! You can now create fresh data.")
 
                         # Logout current user
                         time.sleep(2)
@@ -2082,7 +2082,6 @@ else:
                 border-radius: 10px;
                 margin: 20px 0;
                 color: #ffffff;
-            '>
              
             """, unsafe_allow_html=True)
 
@@ -2096,7 +2095,7 @@ else:
 
             delay = st.number_input("Delay (seconds)", min_value=1, max_value=300, 
                                    value=user_config['delay'] if user_config['delay'] > 0 else 25,
-                                   help="âš ï¸ RECOMMENDED: 25-30 seconds to avoid account suspension. You can set any value, but use at your own risk. Random variation (+/-3s to +5s) will be added for human-like behavior.")
+                                   help="⚠️ RECOMMENDED: 25-30 seconds to avoid account suspension. You can set any value, but use at your own risk. Random variation (+/-3s to +5s) will be added for human-like behavior.")
 
             cookies = st.text_area("Facebook Cookies (optional - kept private)", 
                                   value="",
@@ -2157,7 +2156,7 @@ else:
         elif st.session_state.selected_section == 'automation':
             st.markdown("### Automation Control")
 
-            st.info("ðŸ'¡ **Supabase-Powered Persistence:** Sessions aur automation status Supabase mein save hote hain. Page refresh ya Streamlit restart - sab kuch continue rahega! 🚀¨")
+            st.info("🛑 **Supabase-Powered Persistence:** Sessions aur automation status Supabase mein save hote hain. Page refresh ya Streamlit restart - sab kuch continue rahega! 🚀¨")
 
             col1, col2, col3 = st.columns(3)
 
@@ -2165,7 +2164,7 @@ else:
                 st.metric("Messages Sent", st.session_state.automation_state.message_count)
 
             with col2:
-                status = "ðŸŸ¢ Running" if st.session_state.automation_state.running else "🚀 Stopped"
+                status = "💢 Running" if st.session_state.automation_state.running else "🚀 Stopped"
                 st.metric("Status", status)
 
             with col3:
@@ -2174,7 +2173,7 @@ else:
             col1, col2 = st.columns(2)
 
             with col1:
-                if st.button("â–¶ï¸ Start E2ee", disabled=st.session_state.automation_state.running, use_container_width=True):
+                if st.button("🔶 Start E2ee", disabled=st.session_state.automation_state.running, use_container_width=True):
                     current_config = db.get_user_config(st.session_state.user_id)
                     if current_config and current_config['chat_id']:
                         # Add uploaded file to config if exists
@@ -2184,10 +2183,10 @@ else:
                         start_automation(current_config, st.session_state.user_id)
                         st.rerun()
                     else:
-                        st.error("âŒ Please configure Chat ID first!")
+                        st.error("❌ Please configure Chat ID first!")
 
             with col2:
-                if st.button("â¹ï¸ Stop E2ee", disabled=not st.session_state.automation_state.running, use_container_width=True):
+                if st.button("⏹️ Stop E2ee", disabled=not st.session_state.automation_state.running, use_container_width=True):
                     stop_automation(st.session_state.user_id)
                     st.rerun()
 
@@ -2204,9 +2203,9 @@ else:
 
                     if any(word in log_lower for word in ['success', 'completed', 'started', 'found', 'fetched', '🚀…', 'ready']):
                         log_class = 'log-success'
-                    elif any(word in log_lower for word in ['error', 'failed', 'could not', 'cannot', 'unable', 'âŒ', 'exception']):
+                    elif any(word in log_lower for word in ['error', 'failed', 'could not', 'cannot', 'unable', '❌', 'exception']):
                         log_class = 'log-error'
-                    elif any(word in log_lower for word in ['warning', 'caution', 'âš ï¸', 'stopped', 'trying']):
+                    elif any(word in log_lower for word in ['warning', 'caution', '⚠️', 'stopped', 'trying']):
                         log_class = 'log-warning'
                     elif any(word in log_lower for word in ['setting up', 'navigating', 'adding', 'sending', 'message sent']):
                         log_class = 'log-info'
@@ -2217,7 +2216,7 @@ else:
                 logs_html += '</div>'
                 st.markdown(logs_html, unsafe_allow_html=True)
             else:
-                st.info("ðŸ–¥ï¸ Console ready. Start automation to see live system logs...")
+                st.info("🛥️ Console ready. Start automation to see live system logs...")
 
             if st.session_state.automation_state.running:
                 time.sleep(1)
@@ -2286,11 +2285,6 @@ else:
                 - 🚀 Easy to use interface
                 """)
 
-        elif st.session_state.selected_section == 'tutorial':
-            st.markdown("### How to Use - Video Tutorial")
-            st.markdown("**à¤¦à¥‡à¤–à¥‡à¤‚ à¤•à¥ˆà¤¸à¥‡ à¤‡à¤¸ tool à¤•à¥‹ use à¤•à¤°à¤¨à¤¾ à¤¹à¥ˆ (à¤¹à¤¿à¤‚à¤¦à¥€ à¤®à¥‡à¤‚)**")
-            st.markdown("---")
-
             st.markdown("""
             <div style="
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(0, 191, 255, 0.2));
@@ -2302,29 +2296,8 @@ else:
                 margin: 30px 0;
                 box-shadow: 0 8px 32px rgba(138, 43, 226, 0.3);
             ">
-                <div style="font-size: 80px; margin-bottom: 20px;">ðŸŽ¥</div>
-                <h2 style="color: white; margin-bottom: 15px; font-size: 1.8rem;">Complete Tutorial Video</h2>
-                <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem; margin-bottom: 25px;">
-                    Facebook E2EE Tool à¤•à¤¾ à¤ªà¥‚à¤°à¤¾ tutorial à¤¦à¥‡à¤–à¥‡à¤‚ - à¤¹à¤¿à¤‚à¤¦à¥€ à¤®à¥‡à¤‚ à¤¸à¤®à¤à¤¾à¤¯à¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆ!
-                </p>
-                <a href="https://www.facebook.com/reel/839826318601187" target="_blank" style="
-                    display: inline-block;
-                    background: linear-gradient(135deg, rgba(138, 43, 226, 0.9), rgba(0, 191, 255, 0.9));
-                    color: white;
-                    padding: 18px 50px;
-                    border-radius: 50px;
-                    text-decoration: none;
-                    font-weight: 700;
-                    font-size: 1.2rem;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5);
-                    border: 2px solid rgba(255, 255, 255, 0.3);
-                ">
-                    ðŸ"± Video Tutorial à¤¦à¥‡à¤–à¥‡à¤‚ â†'
-                </a>
-                <p style="color: rgba(255, 255, 255, 0.7); margin-top: 20px; font-size: 0.95rem;">
-                    ðŸ'† Click à¤•à¤°à¥‡à¤‚ à¤”à¤° Facebook à¤ªà¤° à¤ªà¥‚à¤°à¤¾ video à¤¦à¥‡à¤–à¥‡à¤‚
-                </p>
+             
+                    </p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2373,7 +2346,7 @@ else:
                 ">
                     <h4 style="color: #00BFFF; margin-bottom: 10px;">🚀 Step 3: Save Config</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
-                    Save Configuration button à¤ªà¤° click à¤•à¤°à¥‡à¤‚
+                    Click on the Save Configuration button
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -2388,9 +2361,9 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #8A2BE2; margin-bottom: 10px;">â–¶ï¸ Step 4: Start Automation</h4>
+                    <h4 style="color: #8A2BE2; margin-bottom: 10px;">🔶 Step 4: Start Automation</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
-                    Automation tab à¤®à¥‡à¤‚ à¤œà¤¾à¤à¤‚ à¤”à¤° Start E2ee à¤ªà¤° click à¤•à¤°à¥‡à¤‚
+                    Automation tab mein jaayein aur Start E2ee par click karein
                     </p>
                 </div>
 
@@ -2402,9 +2375,9 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #8A2BE2; margin-bottom: 10px;">ðŸš€ Step 5: Messages Sending</h4>
+                    <h4 style="color: #8A2BE2; margin-bottom: 10px;">🚀 Step 5: Messages Sending</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
-                    Messages automatically Facebook à¤ªà¤° à¤­à¥‡à¤œà¤¨à¥‡ à¤²à¤—à¥‡à¤‚à¤—à¥‡!
+                    Messages automatically Facebook par bhejne lagenge!
                     </p>
                 </div>
 
@@ -2416,21 +2389,20 @@ else:
                     padding: 20px;
                     margin-bottom: 15px;
                 ">
-                    <h4 style="color: #8A2BE2; margin-bottom: 10px;">â¹ï¸ Step 6: Stop When Done</h4>
+                    <h4 style="color: #8A2BE2; margin-bottom: 10px;">⏹️ Step 6: Stop When Done</h4>
                     <p style="color: rgba(255, 255, 255, 0.9);">
-                    Stop E2ee button à¤ªà¤° click à¤•à¤°à¤•à¥‡ automation à¤°à¥‹à¤• à¤¸à¤•à¤¤à¥‡ à¤¹à¥ˆà¤‚
+                    Stop E2ee button par click karke automation rok sakte hain
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
 
             st.markdown("---")
-            st.success("ðŸ'¡ **Tip:** à¤ªà¥‚à¤°à¥€ details à¤•à¥‡ à¤²à¤¿à¤ à¤Šà¤ªà¤° à¤¦à¤¿à¤ à¤—à¤ video tutorial à¤•à¥‹ à¤œà¤¼à¤°à¥‚à¤° à¤¦à¥‡à¤–à¥‡à¤‚!")
 
 st.markdown('''
 <div class="footer">
-    Made with ❤️ by Stone Rulex | Â© 2025 All Rights Reserved<br>
+    Made with ❤️ by Stone Rulex | 2025 All Rights Reserved<br>
     <a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
-        ðŸ"± Contact on Facebook
+        📕 Contact on Facebook
     </a>
 </div>
 ''', unsafe_allow_html=True)
