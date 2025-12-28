@@ -2122,7 +2122,7 @@ else:
                                   height=100,
                                   help="Your cookies are encrypted and never shown to anyone")
 
-            st.markdown("### ðŸ"± NP Messages File")
+            st.markdown("### NP Messages File")
             st.info("NP messages ke liye file upload karo! Text file (.txt) format me messages honge.")
             
             uploaded_file = st.file_uploader(
