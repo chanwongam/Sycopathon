@@ -2242,7 +2242,7 @@ else:
                 st.rerun()
 
         elif st.session_state.selected_section == 'insta':
-            st.markdown("### ðŸ"¸ Instagram Automation Tool")
+            st.markdown("### Instagram Automation Tool")
             st.markdown("**Instagram ke liye bhi automation tool use karo!**")
             st.markdown("---")
 
