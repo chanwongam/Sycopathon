@@ -2352,7 +2352,7 @@ else:
             """, unsafe_allow_html=True)
 
             st.markdown("---")
-            st.markdown("### ðŸ" Quick Steps Guide:")
+            st.markdown("### Quick Steps Guide:")
 
             col1, col2 = st.columns(2)
 
