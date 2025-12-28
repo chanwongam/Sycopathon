@@ -1868,7 +1868,7 @@ else:
     st.markdown('<div class="main-header"><h1>PRINCE E2EE FACEBOOK CONVO</h1><p>Created by Prince Malhotra</p><a href="https://www.facebook.com/profile.php?id=100049197991607" target="_blank" class="contact-link">ðŸ"± Contact Developer</a></div>', unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
-    tab1, tab2 = st.tabs(["ðŸ" Login", "âœ¨ Sign Up"])
+    tab1, tab2 = st.tabs(["🐐 Login", "✨ Sign Up"])
 
     with tab1:
         st.markdown("### Welcome Back!")
