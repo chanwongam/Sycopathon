@@ -2059,7 +2059,7 @@ else:
         if 'selected_section' not in st.session_state:
             st.session_state.selected_section = 'configuration'
 
-        st.markdown("### ðŸ"± Navigation")
+        st.markdown("### 🧭 Navigation")
 
         if st.button("âš™ï¸ Configuration", use_container_width=True, type="primary" if st.session_state.selected_section == 'configuration' else "secondary"):
             st.session_state.selected_section = 'configuration'
